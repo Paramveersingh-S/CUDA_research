@@ -57,6 +57,9 @@ def get_matmul_configs():
         (64, 32, 32, 8), (32, 64, 32, 8), (128, 64, 32, 8)
     ]:
         for w in [2, 4, 8]:
+            # Skip pathological configs that cause excessive spilling and stalls
+            if max(block_m, block_n) == 128 and w < 8:
+                continue
             for stages in [2, 3, 4]:
                 configs.append(triton.Config(
                     {'BLOCK_SIZE_M': block_m, 'BLOCK_SIZE_N': block_n, 'BLOCK_SIZE_K': block_k, 'GROUP_SIZE_M': group_m},
