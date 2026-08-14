@@ -37,9 +37,9 @@ def run_sanity_check():
     # 2. Autotuner and Harness Check
     print("Running EnergyAutotuner Sweep (Small Grid)...")
     configs = [
-        triton.Config({'BLOCK_SIZE': 256, 'num_warps': 2}),
-        triton.Config({'BLOCK_SIZE': 512, 'num_warps': 4}),
-        triton.Config({'BLOCK_SIZE': 1024, 'num_warps': 8}),
+        triton.Config({'BLOCK_SIZE': 256}, num_warps=2),
+        triton.Config({'BLOCK_SIZE': 512}, num_warps=4),
+        triton.Config({'BLOCK_SIZE': 1024}, num_warps=8),
     ]
     
     tuner = EnergyAutotuner(
@@ -48,7 +48,7 @@ def run_sanity_check():
         input_factory=vector_add_input_factory(size)
     )
     
-    results = tuner.run_grid(n_trials=30)
+    results = tuner.run_grid(n_trials=500)
     for res in results:
         print(f"Config: {res['config']}, Latency: {res['median_latency_s']*1000:.3f} ms, Energy: {res['energy_per_call_j']*1000:.3f} mJ")
         

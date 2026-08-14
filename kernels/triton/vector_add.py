@@ -23,7 +23,7 @@ def build_vector_add_kernel(config):
     """Factory for the energy autotuner"""
     def kernel_fn(x, y, output, n_elements):
         grid = lambda meta: (triton.cdiv(n_elements, meta['BLOCK_SIZE']),)
-        add_kernel[grid](x, y, output, n_elements, num_warps=config.kwargs.get('num_warps', 4), BLOCK_SIZE=config.kwargs['BLOCK_SIZE'])
+        add_kernel[grid](x, y, output, n_elements, num_warps=config.num_warps, BLOCK_SIZE=config.kwargs['BLOCK_SIZE'])
     return kernel_fn
 
 def vector_add_input_factory(size):
