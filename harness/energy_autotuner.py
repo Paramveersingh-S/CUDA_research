@@ -45,6 +45,7 @@ class EnergyAutotuner:
         def objective(trial):
             idx = trial.suggest_int('config_idx', 0, len(self.configs) - 1)
             cfg = self.configs[idx]
+            print(f"  [Optuna Trial {trial.number+1}/{n_optuna_trials}] Testing {cfg}...")
             fn = self.kernel_builder(cfg)
             
             try:
@@ -55,7 +56,7 @@ class EnergyAutotuner:
                 self.results.append(dict(config=cfg, error=str(e)))
                 return float('inf'), float('inf')
                 
-        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        optuna.logging.set_verbosity(optuna.logging.INFO)
         study = optuna.create_study(directions=["minimize", "minimize"])
         study.optimize(objective, n_trials=n_optuna_trials)
         
