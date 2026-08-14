@@ -5,7 +5,7 @@ import json
 import datetime
 
 # Usually in Colab you run pip/apt via `!pip install ...`, but in a script we run them like this:
-subprocess.run(["pip", "install", "-q", "triton", "pynvml", "optuna", "pandas", "matplotlib", "seaborn", "scipy", "statsmodels"])
+subprocess.run(["pip", "install", "-q", "triton", "nvidia-ml-py", "ninja", "optuna", "pandas", "matplotlib", "seaborn", "scipy", "statsmodels"])
 
 import torch
 import triton
@@ -20,8 +20,8 @@ os.makedirs('/content/drive/MyDrive/greentune_results', exist_ok=True)  # after 
 try:
     from google.colab import drive
     drive.mount('/content/drive')
-except ImportError:
-    print("Not running in Colab environment or drive mount failed.")
+except (ImportError, AttributeError):
+    print("NOTE: drive.mount() failed because it requires an interactive Colab cell. Please run `from google.colab import drive; drive.mount('/content/drive')` in a separate notebook cell.")
 
 # Attempt clock locking; record whether it actually worked
 lock_result = subprocess.run(
