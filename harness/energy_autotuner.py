@@ -37,6 +37,30 @@ class EnergyAutotuner:
             self.results.append(dict(config=cfg, **stats))
         return self.results
 
+    def run_optuna(self, n_optuna_trials=20, n_trials=50):
+        import optuna
+        
+        args = self.input_factory()
+        
+        def objective(trial):
+            idx = trial.suggest_int('config_idx', 0, len(self.configs) - 1)
+            cfg = self.configs[idx]
+            fn = self.kernel_builder(cfg)
+            
+            try:
+                stats = benchmark_config(fn, *args, n_trials=n_trials)
+                self.results.append(dict(config=cfg, **stats))
+                return stats['median_latency_s'], stats['energy_per_call_j']
+            except Exception as e:
+                self.results.append(dict(config=cfg, error=str(e)))
+                return float('inf'), float('inf')
+                
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+        study = optuna.create_study(directions=["minimize", "minimize"])
+        study.optimize(objective, n_trials=n_optuna_trials)
+        
+        return self.results
+
     def pareto_front(self):
         """Non-dominated set on (latency, energy), both minimized."""
         valid = [r for r in self.results if "error" not in r]
