@@ -17,16 +17,16 @@ This repository contains the full source code, benchmarking harness, optimizatio
 The core of GreenTune is the `EnergyAutotuner`, which wraps the standard compilation loop and dispatches an asynchronous `PowerSampler` thread during benchmarking to integrate NVML board-level power measurements.
 
 ```mermaid
-graph TD;
-    A[Triton Kernel] -->|Grid Search| B[EnergyAutotuner];
-    B -->|Configuration| C[GPU Execution];
-    C -->|Continuous Polling| D[NVML PowerSampler];
-    C -->|Time Events| E[Latency Metrics];
-    D -->|Trapezoidal Integration| F[Energy Metrics];
-    E --> G[Pareto Characterization];
-    F --> G;
-    G -->|TPE Feedback| H[Optuna Search];
-    H --> B;
+graph TD
+    A[Triton Kernel] -->|Grid Search| B[EnergyAutotuner]
+    B -->|Configuration| C[GPU Execution]
+    C -->|Continuous Polling| D[NVML PowerSampler]
+    C -->|Time Events| E[Latency Metrics]
+    D -->|Trapezoidal Integration| F[Energy Metrics]
+    E --> G[Pareto Characterization]
+    F --> G
+    G -->|TPE Feedback| H[Optuna Search]
+    H --> B
 ```
 
 ## Key Findings
