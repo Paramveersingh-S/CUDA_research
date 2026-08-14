@@ -1,0 +1,10 @@
+\section{Related Work}
+\label{sec:related_work}
+
+The intersection of deep learning compilers and energy optimization is an active area of research. Early tensor compilers, such as TVM and its automated scheduling framework Ansor \cite{zheng2020ansor}, pioneered the use of machine learning to explore the vast configuration space of tensor programs. However, Ansor and similar frameworks primarily focus on execution latency.
+
+Recently, several studies have attempted to integrate energy as an optimization objective. Schoonhoven et al. \cite{schoonhoven2022going} explored model-steered autotuning for GPU energy efficiency, but their approach required a custom compiler backend rather than integrating with existing, widely-adopted DSLs like Triton. Cheema and Khan \cite{cheema2023gpuautotuning} developed an autotuning framework for OpenCL kernels, demonstrating that multi-objective search can yield significant power savings. However, OpenCL is rarely used in modern LLM inference stacks.
+
+More closely related to our work, Zhang et al. \cite{zhang2024automating} introduced a fast search-based compilation approach for energy-efficient GPU kernel generation. While effective, their methodology requires training a surrogate cost model offline. In contrast, \textbf{GreenTune} operates directly on the device, providing an online, energy-aware extension to Triton's native autotuner without the need for pre-trained models.
+
+Finally, emerging studies on LLM-based kernel generation, such as KernelPro \cite{kernelpro2026} and FlipFlop \cite{flipflop2026}, treat energy as a secondary metric (a "tie-breaker" subordinate to speedup) or rely on static analysis. Our work differs by promoting energy to a first-class objective within the runtime autotuner of the most ubiquitous tensor compiler in modern AI systems.

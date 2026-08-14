@@ -1,0 +1,52 @@
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{System Architecture}
+The GreenTune framework intercepts the standard Triton kernel compilation pipeline. Rather than executing a blind grid search for the fastest configuration, GreenTune injects an \texttt{EnergyAutotuner} that wraps the benchmarking loop. Figure \ref{fig:architecture} illustrates the system architecture.
+
+\begin{figure}[ht]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tikzpicture}[
+    node distance=1.5cm and 1cm,
+    font=\sffamily\small,
+    box/.style={draw, rounded corners, fill=blue!10, text centered, minimum height=1cm, minimum width=2.5cm},
+    hw/.style={draw, fill=green!10, text centered, minimum height=1cm, minimum width=2.5cm},
+    arrow/.style={-{Stealth[scale=1.2]}, thick}
+]
+
+% Nodes
+\node[box] (input) {Triton Kernel};
+\node[box, right=of input] (tuner) {EnergyAutotuner};
+\node[hw, right=of tuner] (gpu) {GPU Execution};
+\node[hw, below=of gpu] (nvml) {NVML PowerSampler};
+\node[box, below=of tuner] (metrics) {Latency \& Energy};
+\node[box, left=of metrics] (pareto) {Pareto Front / Optuna};
+
+% Background boxes for logical grouping
+\begin{scope}[on background layer]
+    \node[fit=(gpu)(nvml), fill=gray!10, rounded corners, draw, dashed, label=above:Hardware Level] {};
+\end{scope}
+
+% Arrows
+\draw[arrow] (input) -- (tuner);
+\draw[arrow] (tuner) -- node[above] {Config} (gpu);
+\draw[arrow] (gpu) -- node[right] {Watts} (nvml);
+\draw[arrow] (gpu) -- node[above left] {Time} (metrics);
+\draw[arrow] (nvml) -- node[below] {Integrate} (metrics);
+\draw[arrow] (metrics) -- (pareto);
+\draw[arrow] (pareto) -- node[left] {Feedback} (tuner);
+
+\end{tikzpicture}%
+}
+\caption{GreenTune Architecture. The EnergyAutotuner dispatches configurations to the GPU while an asynchronous NVML PowerSampler integrates the energy profile. The results construct a Pareto front or feed a multi-objective Optuna search.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Continuous Power Integration}
+Because NVML reports board power at a fixed sampling frequency (typically 10-60 Hz depending on the driver version), taking a single power sample per benchmark trial is statistically invalid. GreenTune employs a \texttt{PowerSampler} that runs continuously on an asynchronous Python thread. During the execution of $N$ benchmark trials for a specific kernel configuration, the sampler continuously polls \texttt{nvmlDeviceGetPowerUsage()}. Once the benchmark completes, the instantaneous power samples (in Watts) are integrated using the trapezoidal rule over the total execution time (in seconds) to compute the total energy (in Joules).
+
+\subsection{Pareto Extraction and Multi-Objective Search}
+For each tensor shape, the \texttt{EnergyAutotuner} collects the median latency $L_c$ and the mean energy per call $E_c$ for every configuration $c$ in the search space. A configuration $c$ dominates another configuration $c'$ if $L_c \leq L_{c'}$ and $E_c \leq E_{c'}$, with at least one strict inequality. The set of non-dominated configurations forms the Pareto frontier.
+
+To mitigate the exponential cost of exhaustive grid searching across massive configuration spaces (e.g., Tiled GEMM), GreenTune supports multi-objective optimization using the Tree-structured Parzen Estimator (TPE) via the Optuna library. This replaces the exhaustive sweep with an intelligent search, dramatically reducing the on-device benchmarking budget required to approximate the Pareto knee.

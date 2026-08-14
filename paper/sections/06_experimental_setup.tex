@@ -1,0 +1,18 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\subsection{Hardware and Software Environment}
+All experiments were conducted on an NVIDIA Tesla T4 GPU (16 GB, Turing architecture, Compute Capability 7.5). The software stack consisted of Python 3.12, PyTorch 2.11.0+cu128, and Triton 3.6.0. 
+
+\subsection{Kernel Benchmark Suite}
+To ensure broad applicability to LLM inference and foundational deep learning primitives, we evaluated GreenTune across a diverse suite of five Triton kernels:
+\begin{enumerate}
+    \item \textbf{Vector Addition:} A purely memory-bound elementwise baseline.
+    \item \textbf{Fused Softmax:} A memory-bound reduction kernel requiring cross-thread synchronization.
+    \item \textbf{RMSNorm:} A complex reduction and scaling kernel critical for modern LLMs like Llama.
+    \item \textbf{Tiled GEMM (FP16):} A heavily compute-bound block matrix multiplication kernel utilizing shared memory.
+    \item \textbf{Fused Causal Attention:} A mixed-bound flash-attention style kernel combining tiled GEMM and online Softmax.
+\end{enumerate}
+
+\subsection{Statistical Protocol}
+To mitigate the right-skewed variance typical of shared cloud GPUs, each configuration was subjected to 10 warmup trials followed by 150 measured trials. If the NVML daemon reported any thermal or power throttling events (e.g., \texttt{SW\_POWER\_CAP}) during a benchmark iteration, the trial block was discarded and re-run.

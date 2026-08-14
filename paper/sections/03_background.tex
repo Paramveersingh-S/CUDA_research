@@ -1,0 +1,10 @@
+\section{Background}
+\label{sec:background}
+
+\subsection{The Triton Compiler}
+Triton is an open-source intermediate language and compiler designed to simplify the development of high-performance GPU kernels \cite{tillet2019triton}. Unlike traditional GPU programming models like CUDA, which require developers to explicitly manage thread hierarchies, shared memory allocations, and synchronization primitives, Triton abstracts these complexities by adopting a block-based programming paradigm. In Triton, operations are defined over multi-dimensional blocks (tiles) of data rather than individual scalar elements. 
+
+To maximize hardware utilization across diverse GPU architectures, Triton employs an autotuning mechanism. The \texttt{@triton.autotune} decorator allows developers to define a grid of configurations (e.g., \texttt{BLOCK\_SIZE\_M}, \texttt{num\_warps}, and \texttt{num\_stages}). At runtime, Triton compiles each configuration, measures their execution latency on the target device using CUDA events, and caches the fastest configuration. However, this caching mechanism inherently prioritizes latency, blinding the compiler to the potential energy implications of its choice.
+
+\subsection{GPU Power Measurement and NVML}
+Modern GPUs expose their power telemetry via the NVIDIA Management Library (NVML). The \texttt{nvmlDeviceGetPowerUsage} API provides instantaneous board-level power draw measurements in milliwatts. Because power fluctuations on a GPU occur at high frequencies (on the order of milliseconds depending on instruction throughput and cache utilization), relying on a single power sample to determine the energy cost of a kernel is insufficient. Accurate energy modeling requires continuous, high-frequency sampling on an asynchronous thread, integrating the instantaneous power over the entire execution window of the kernel. This methodology aligns with established frameworks for GPU power modeling, such as AccelWattch \cite{kandiah2021accelwattch}, which emphasize the necessity of capturing temporal variance in power states.

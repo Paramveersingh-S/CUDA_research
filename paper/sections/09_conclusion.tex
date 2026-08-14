@@ -1,0 +1,4 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this paper, we introduced GreenTune, an energy-aware extension to Triton's autotuning framework. By treating energy dissipation as a first-class objective, we demonstrated that modern tensor compilers can uncover non-trivial latency-energy Pareto frontiers. Across a representative suite of LLM primitives, we showed that the latency-optimal configurations cached by default autotuners often sacrifice substantial energy efficiency for marginal speedups. By navigating the configuration space with multi-objective search algorithms like TPE, developers can confidently select Pareto-optimal configurations that dramatically reduce the carbon footprint of deep learning workloads without requiring custom compilation backends or offline surrogate models.

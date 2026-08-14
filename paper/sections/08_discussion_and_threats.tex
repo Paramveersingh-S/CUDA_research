@@ -1,0 +1,10 @@
+\section{Discussion and Threats to Validity}
+\label{sec:discussion}
+
+While our findings strongly advocate for energy-aware tensor compilation, several limitations must be acknowledged. 
+
+\textbf{Measurement Jitter and NVML Constraints:} NVML's board-level power sampling operates at a low polling rate ($\sim 10-60$ Hz). To mitigate this, our \texttt{PowerSampler} measured long benchmark loops (150 trials). However, extremely short kernels ($<0.5$ ms) may still experience sub-sample aliasing, meaning energy readings are accurate in aggregate but prone to jitter.
+
+\textbf{Single Architecture Scope:} All measurements were taken on a Turing-based NVIDIA Tesla T4 GPU. Modern Ampere (A100) or Hopper (H100) architectures, which feature massive L2 caches, advanced clock scaling, and specialized Tensor Cores, may exhibit radically different Pareto topographies. Our claims regarding the specific optimal warp counts are inherently hardware-specific, though the \textit{existence} of the Pareto tradeoff is architectural-agnostic.
+
+\textbf{Clock Locking Limitations:} Due to the constraints of the shared cloud environment (Google Colab), strict GPU core and memory clock locking (\texttt{nvidia-smi -lgc}) was occasionally overridden by the hypervisor. We discarded trials where power capping was active, but dynamic voltage and frequency scaling (DVFS) undoubtedly influenced the energy measurements.
